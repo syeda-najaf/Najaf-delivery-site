@@ -1,0 +1,19 @@
+Extract this package into:
+D:\Syed-Food-Center-main\Najaf-delivery-site-main
+
+Files:
+src/styles/professional-theme.css
+src/styles/header.css
+src/pages/AuthPage.css
+src/pages/LocationPicker.css
+src/pages/OrderTracking.css
+src/pages/RoleDashboards.css
+src/pages/Checkout.css
+src/pages/Checkout.jsx
+PRO_DESIGN_SETUP.md
+FILE_MAP.txt
+
+After extraction, add this line once at the very top of src/index.js:
+import "./styles/professional-theme.css";
+
+Do not reinstall React, React-Leaflet, or replace package versions.

@@ -1,53 +1,21 @@
-Here’s your personalized version of the **Food Ordering App** `README` section with your info and instructions clearly structured:
+# NAJAF ULTRA PRISM
 
----
+A full front-end visual refresh for the Najaf food platform.
 
-## 🍔 Food Ordering App – Developed by Syeda Najaf
+## What changed
+- Replaced food emojis with real food photography loaded from Unsplash URLs.
+- Reworked the entire visual system around a colorful editorial palette: cobalt, violet, magenta, citrus, coral and teal.
+- Reworked hero, cards, restaurants, offers, cart, checkout, auth, profile, orders, dashboard, tracking, map HUD, modals, toast and footer.
+- Keeps React Router and the existing front-end order/cart flow.
+- Keeps the interactive Leaflet + OpenStreetMap delivery map and browser geolocation flow from the Ultra build.
 
-### Features
-
----
-
-This project includes the following powerful features:
-
-* 🛒 Add to Cart Functionality
-* 🛍️ Full Shopping Cart Experience
-* 🔍 Product Filtering
-* 📦 Individual Product Pages
-* 💳 Cart and Checkout Pages
-* 📞 Contact Page
-* ✨ Sleek, Modern Minimalist UI
-
----
-
-### 🛠 Technologies Used
-
----
-
-1. **React.js**
-2. **Redux Toolkit**
-3. **ReactStrap**
-4. **CSS**
-
----
-
-### 📦 How to Run the Project
-
----
-
-To get started with this project locally:
-
-```bash
-# 1. Install all required dependencies
+## Install/run
+```powershell
 npm install
-
-# 2. Start the development server
 npm start
 ```
 
-> Project developed and maintained by **Syeda Najaf**
->  Feel free to explore, customize, or extend!
+Open http://localhost:3000/home
 
----
-
-
+## Important
+The food photographs are loaded from Unsplash at runtime, so an internet connection is required for those images. The map already uses OpenStreetMap tiles via Leaflet at runtime.

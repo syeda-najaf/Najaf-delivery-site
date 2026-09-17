@@ -1,0 +1,508 @@
+
+/* =========================================================
+   NAJAF FLUX THEME
+   Original visual language for Najaf Food Center
+   Concept: "Night Market Orbit"
+   Palette: ink, warm paper, saffron, mint, electric violet
+   ========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+
+:root {
+  --nf-ink: #101522;
+  --nf-ink-2: #171d2c;
+  --nf-paper: #f7f3ea;
+  --nf-card: #fffdf8;
+  --nf-line: rgba(16, 21, 34, 0.09);
+  --nf-saffron: #ffb703;
+  --nf-saffron-2: #ff8a00;
+  --nf-mint: #54e0ba;
+  --nf-violet: #806bff;
+  --nf-sky: #62b9ff;
+  --nf-danger: #ff5b67;
+  --nf-success: #19b779;
+  --nf-shadow: 0 18px 60px rgba(16, 21, 34, 0.11);
+  --nf-shadow-soft: 0 8px 30px rgba(16, 21, 34, 0.08);
+  --nf-radius-lg: 26px;
+  --nf-radius-md: 18px;
+  --nf-radius-sm: 12px;
+  --nf-max: 1220px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 183, 3, 0.11), transparent 22%),
+    radial-gradient(circle at 95% 8%, rgba(128, 107, 255, 0.10), transparent 22%),
+    var(--nf-paper);
+  color: var(--nf-ink);
+  font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- Shared layout ---------- */
+
+.container,
+.main-container,
+.home-container,
+.checkout-container,
+.tracking-container {
+  width: min(calc(100% - 32px), var(--nf-max));
+  margin-inline: auto;
+}
+
+.card,
+.product-card,
+.service-item,
+.category-item,
+.dashboard-card,
+.order-card,
+.location-card {
+  border: 1px solid var(--nf-line) !important;
+  border-radius: var(--nf-radius-md) !important;
+  background: rgba(255, 253, 248, 0.88) !important;
+  box-shadow: var(--nf-shadow-soft) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.card:hover,
+.product-card:hover,
+.order-card:hover,
+.location-card:hover {
+  box-shadow: var(--nf-shadow);
+}
+
+/* ---------- Header / navigation ---------- */
+
+header,
+.header,
+.site-header,
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: rgba(16, 21, 34, 0.94) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+header a,
+.header a,
+.navbar a,
+.navbar-brand {
+  color: #fff !important;
+}
+
+.logo,
+.brand-logo,
+.navbar-brand {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em;
+}
+
+.nav-link:hover,
+header a:hover,
+.navbar a:hover {
+  color: var(--nf-saffron) !important;
+}
+
+/* ---------- Hero ---------- */
+
+.hero-section,
+.hero,
+.banner-section {
+  position: relative;
+  overflow: hidden;
+  margin: 18px auto 28px;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 18% 26%, rgba(255, 183, 3, 0.30), transparent 26%),
+    radial-gradient(circle at 78% 18%, rgba(128, 107, 255, 0.32), transparent 30%),
+    radial-gradient(circle at 70% 80%, rgba(84, 224, 186, 0.22), transparent 30%),
+    var(--nf-ink);
+  box-shadow: 0 28px 80px rgba(16, 21, 34, 0.22);
+}
+
+.hero-section::after,
+.hero::after,
+.banner-section::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -55% auto;
+  width: 55%;
+  height: 85%;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    0 0 0 40px rgba(255,255,255,.03),
+    0 0 0 80px rgba(255,255,255,.02);
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+
+.hero-section h1,
+.hero h1,
+.banner-section h1 {
+  color: #fff !important;
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: clamp(2.7rem, 7vw, 5.6rem) !important;
+  line-height: .95 !important;
+  letter-spacing: -0.055em;
+}
+
+.hero-section p,
+.hero p,
+.banner-section p {
+  color: rgba(255,255,255,.74) !important;
+}
+
+.hero-section button,
+.hero button,
+.banner-section button {
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 13px 20px !important;
+  background: linear-gradient(135deg, var(--nf-saffron), var(--nf-saffron-2)) !important;
+  color: #1a160e !important;
+  box-shadow: 0 12px 30px rgba(255, 183, 3, 0.25);
+}
+
+/* ---------- Search / location ---------- */
+
+.search-input,
+input[type="search"],
+.location-input {
+  border: 1px solid var(--nf-line) !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.72) !important;
+  min-height: 46px;
+  padding-inline: 16px !important;
+}
+
+.search-input:focus,
+input[type="search"]:focus,
+.location-input:focus {
+  outline: none !important;
+  border-color: rgba(128, 107, 255, .62) !important;
+  box-shadow: 0 0 0 4px rgba(128, 107, 255, .10) !important;
+}
+
+/* ---------- Product cards ---------- */
+
+.product-card {
+  overflow: hidden;
+  position: relative;
+}
+
+.product-card img {
+  border-radius: 18px !important;
+  transition: transform .35s ease;
+}
+
+.product-card:hover img {
+  transform: scale(1.035);
+}
+
+.product-card h5,
+.product-card h4,
+.product-card h3 {
+  font-family: "Space Grotesk", sans-serif !important;
+  letter-spacing: -0.02em;
+}
+
+.product-card .price,
+.product-card span[class*="price"] {
+  color: var(--nf-ink) !important;
+  font-weight: 800 !important;
+}
+
+.product-card button,
+.add-to-cart-btn,
+.btn-primary {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--nf-ink) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(16, 21, 34, .14);
+}
+
+.product-card button:hover,
+.add-to-cart-btn:hover,
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--nf-violet), #5f4fd3) !important;
+}
+
+/* ---------- Categories ---------- */
+
+.category-item img,
+.category-card img {
+  border-radius: 18px !important;
+}
+
+.category-item:hover,
+.category-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 183, 3, .35) !important;
+}
+
+/* ---------- Deals / chips ---------- */
+
+.badge,
+.chip,
+.tag,
+.status-badge {
+  border-radius: 999px !important;
+}
+
+.status-placed {
+  background: rgba(128,107,255,.13) !important;
+  color: #5e4ad5 !important;
+}
+
+.status-preparing {
+  background: rgba(255,183,3,.16) !important;
+  color: #a76700 !important;
+}
+
+.status-on-the-way {
+  background: rgba(84,224,186,.18) !important;
+  color: #087856 !important;
+}
+
+.status-delivered {
+  background: rgba(25,183,121,.14) !important;
+  color: #087a50 !important;
+}
+
+/* ---------- Checkout ---------- */
+
+.checkoutMessage,
+.checkout-page,
+.checkout-shell {
+  width: min(calc(100% - 32px), 1000px);
+  margin: 42px auto;
+  padding: 34px;
+  border: 1px solid var(--nf-line);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(84,224,186,.14), transparent 30%),
+    rgba(255,253,248,.92);
+  box-shadow: var(--nf-shadow);
+}
+
+.checkoutMessage h3,
+.checkout-page h1,
+.checkout-page h2 {
+  font-family: "Space Grotesk", sans-serif !important;
+  letter-spacing: -0.04em;
+}
+
+/* ---------- Live tracking ---------- */
+
+#map,
+.map,
+.leaflet-container {
+  border-radius: 26px !important;
+  border: 1px solid rgba(16,21,34,.12) !important;
+  box-shadow: var(--nf-shadow) !important;
+}
+
+.tracking-panel,
+.tracking-card {
+  border: 1px solid var(--nf-line) !important;
+  border-radius: var(--nf-radius-lg) !important;
+  background: rgba(255,253,248,.94) !important;
+  box-shadow: var(--nf-shadow-soft) !important;
+}
+
+.eta,
+.eta-card {
+  background: var(--nf-ink) !important;
+  color: #fff !important;
+  border-radius: 22px !important;
+}
+
+.eta strong,
+.eta-card strong {
+  color: var(--nf-saffron) !important;
+}
+
+/* ---------- Auth ---------- */
+
+.auth-page,
+.login-page,
+.register-page {
+  min-height: calc(100vh - 80px);
+  display: grid;
+  place-items: center;
+  padding: 36px 18px;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(255,183,3,.14), transparent 25%),
+    radial-gradient(circle at 88% 10%, rgba(128,107,255,.15), transparent 25%),
+    var(--nf-paper);
+}
+
+.auth-card,
+.login-card,
+.register-card {
+  width: min(100%, 470px);
+  border-radius: 30px !important;
+  border: 1px solid var(--nf-line) !important;
+  background: rgba(255,253,248,.92) !important;
+  box-shadow: var(--nf-shadow) !important;
+}
+
+.auth-card h1,
+.auth-card h2,
+.login-card h1,
+.login-card h2 {
+  font-family: "Space Grotesk", sans-serif !important;
+  letter-spacing: -0.045em;
+}
+
+/* ---------- Dashboard ---------- */
+
+.dashboard-page,
+.restaurant-page,
+.delivery-page {
+  background:
+    radial-gradient(circle at 90% 0%, rgba(128,107,255,.08), transparent 25%),
+    var(--nf-paper);
+}
+
+.dashboard-card h3,
+.dashboard-card h4,
+.order-card h3,
+.order-card h4 {
+  font-family: "Space Grotesk", sans-serif !important;
+}
+
+.dashboard-action,
+.action-btn {
+  border-radius: 12px !important;
+  border: 1px solid var(--nf-line) !important;
+  background: var(--nf-card) !important;
+}
+
+.dashboard-action.primary,
+.action-btn.primary {
+  background: var(--nf-ink) !important;
+  color: #fff !important;
+}
+
+/* ---------- Footer ---------- */
+
+footer,
+.site-footer {
+  margin-top: 48px;
+  background: var(--nf-ink) !important;
+  color: rgba(255,255,255,.78) !important;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+footer h3,
+footer h4,
+footer strong {
+  color: #fff !important;
+  font-family: "Space Grotesk", sans-serif !important;
+}
+
+/* ---------- New "Orbit Rail" utility ---------- */
+
+.najaf-orbit-rail {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 2px 14px;
+  scrollbar-width: none;
+}
+
+.najaf-orbit-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.najaf-orbit-pill {
+  flex: 0 0 auto;
+  border: 1px solid var(--nf-line);
+  background: rgba(255,253,248,.85);
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.najaf-orbit-pill.active {
+  background: var(--nf-ink);
+  color: #fff;
+  border-color: var(--nf-ink);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .hero-section,
+  .hero,
+  .banner-section {
+    border-radius: 24px;
+  }
+
+  .checkoutMessage,
+  .checkout-page,
+  .checkout-shell {
+    padding: 22px;
+    border-radius: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .container,
+  .main-container,
+  .home-container,
+  .checkout-container,
+  .tracking-container {
+    width: min(calc(100% - 20px), var(--nf-max));
+  }
+
+  .hero-section h1,
+  .hero h1,
+  .banner-section h1 {
+    font-size: clamp(2.45rem, 13vw, 4rem) !important;
+  }
+
+  .card,
+  .product-card,
+  .service-item,
+  .category-item,
+  .dashboard-card,
+  .order-card,
+  .location-card {
+    border-radius: 16px !important;
+  }
+}

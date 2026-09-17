@@ -1,111 +1,89 @@
-import React, { useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { Container } from "reactstrap";
-import logo from "../../assets/images/res-logo.png";
-import { NavLink, Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-
-import { cartUiActions } from "../../store/shopping-cart/cartUiSlice";
-
+import React, { useEffect, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { FiHeart, FiMapPin, FiMenu, FiSearch, FiShoppingBag, FiUser, FiX } from "react-icons/fi";
+import { useSelector } from "react-redux";
+import { getSavedLocation } from "../../services/location";
+import { clearSession, getSessionUser } from "../../services/liveOrder";
 import "../../styles/header.css";
 
-const nav__links = [
-  {
-    display: "Home",
-    path: "/home",
-  },
-  {
-    display: "Foods",
-    path: "/pizzas",
-  },
-  {
-    display: "Cart",
-    path: "/cart",
-  },
-  {
-    display: "Contact",
-    path: "/contact",
-  },
+const links = [
+  { label: "Home", path: "/home" },
+  { label: "Menu", path: "/pizzas" },
+  { label: "Offers", path: "/home#offers" },
+  { label: "Track", path: "/track-order" },
 ];
 
 const Header = () => {
-  const menuRef = useRef(null);
-  const headerRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
-  const dispatch = useDispatch();
-
-  const toggleMenu = () => menuRef.current.classList.toggle("show__menu");
-  let navigate = useNavigate();
-
-  const toggleCart = () => {
-    dispatch(cartUiActions.toggle());
-  };
-
-  console.log(menuRef?.current?.classList.value);
+  const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(getSessionUser());
+  const [savedLocation, setSavedLocation] = useState(getSavedLocation());
 
   useEffect(() => {
-    window.addEventListener("scroll", () => {
-      if (
-        document.body.scrollTop > 80 ||
-        document.documentElement.scrollTop > 80
-      ) {
-        headerRef.current.classList.add("header__shrink");
-      } else {
-        headerRef.current.classList.remove("header__shrink");
-      }
-    });
-
-    return () => window.removeEventListener("scroll");
+    const sync = () => {
+      setUser(getSessionUser());
+      setSavedLocation(getSavedLocation());
+    };
+    window.addEventListener("najaf-session-changed", sync);
+    window.addEventListener("najaf-location-changed", sync);
+    return () => {
+      window.removeEventListener("najaf-session-changed", sync);
+      window.removeEventListener("najaf-location-changed", sync);
+    };
   }, []);
 
-  return (
-    <header className="header" ref={headerRef}>
-      <Container>
-        <div className="nav__wrapper d-flex align-items-center justify-content-between">
-          <div className="logo" onClick={() => navigate("/home")}>
-            <img src={logo} alt="logo" />
-            <h5>Najaf's Food Center</h5>
-          </div>
-          {/* ======= menu ======= */}
-          <div className="navigation" ref={menuRef} onClick={toggleMenu}>
-            <div
-              className="menu d-flex align-items-center gap-5"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="header__closeButton">
-                <span onClick={toggleMenu}>
-                  <i className="ri-close-fill"></i>
-                </span>
-              </div>
-              {nav__links.map((item, index) => (
-                <NavLink
-                  to={item.path}
-                  key={index}
-                  className={(navClass) =>
-                    navClass.isActive ? "active__menu" : ""
-                  }
-                  onClick={toggleMenu}
-                >
-                  {item.display}
-                </NavLink>
-              ))}
-            </div>
-          </div>
+  useEffect(() => setOpen(false), [location.pathname, location.search]);
 
-          {/* ======== nav right icons ========= */}
-          <div className="nav__right d-flex align-items-center gap-4">
-            <span className="cart__icon" onClick={toggleCart}>
-              <i className="ri-shopping-basket-line"></i>
-              <span className="cart__badge">{totalQuantity}</span>
-            </span>
-            
-            <span className="mobile__menu" onClick={toggleMenu}>
-              <i className="ri-menu-line"></i>
-            </span>
+  const shortLocation = savedLocation?.displayName
+    ? savedLocation.displayName.split(",").slice(0, 2).join(",")
+    : "Set location";
+
+  function signOut() {
+    clearSession();
+    window.dispatchEvent(new Event("najaf-session-changed"));
+    navigate("/home");
+  }
+
+  return (
+    <header className="najaf-header">
+      <div className="najaf-topbar">
+        <div className="najaf-container najaf-topbar-inner">
+          <button className="najaf-delivery-loc" type="button" onClick={() => navigate("/location")}>
+            <FiMapPin />
+            <span><small>DELIVER TO</small><strong>{shortLocation}</strong></span>
+          </button>
+          <div className="najaf-top-links"><span>Freshly prepared</span><span>Live tracking</span><span>Secure checkout</span></div>
+        </div>
+      </div>
+
+      <div className="najaf-mainbar">
+        <div className="najaf-container najaf-mainbar-inner">
+          <button className="najaf-logo" type="button" onClick={() => navigate("/home")} aria-label="Najaf home">
+            <span className="najaf-logo-mark"><span /><span /></span>
+            <span><strong>NAJAF</strong><small>FOOD CENTER</small></span>
+          </button>
+
+          <nav className={`najaf-nav ${open ? "open" : ""}`} aria-label="Primary navigation">
+            <div className="najaf-mobile-nav-head"><span>Menu</span><button type="button" onClick={() => setOpen(false)}><FiX /></button></div>
+            {links.map((item) => (
+              <NavLink key={item.path} to={item.path} className={({ isActive }) => isActive ? "active" : ""}>{item.label}</NavLink>
+            ))}
+            <button className="mobile-location-link" type="button" onClick={() => navigate("/location")}><FiMapPin /> Delivery location</button>
+            <button className="mobile-profile-link" type="button" onClick={() => navigate(user ? "/account" : "/login")}><FiUser /> {user ? "My account" : "Login"}</button>
+          </nav>
+
+          <div className="najaf-nav-actions">
+            <button type="button" className="icon-button desktop-only" onClick={() => navigate("/pizzas")} aria-label="Search"><FiSearch /></button>
+            <button type="button" className="icon-button desktop-only" onClick={() => navigate("/account")} aria-label="Account"><FiUser /></button>
+            <button type="button" className="icon-button desktop-only" onClick={() => navigate("/pizzas")} aria-label="Favorites"><FiHeart /></button>
+            <button type="button" className="cart-button" onClick={() => navigate("/cart")} aria-label="Cart"><FiShoppingBag /><span>{totalQuantity}</span></button>
+            <button type="button" className="mobile-menu-button" onClick={() => setOpen(true)} aria-label="Open menu"><FiMenu /></button>
+            {user && <button type="button" className="signout-button" onClick={signOut}>Sign out</button>}
           </div>
         </div>
-      </Container>
+      </div>
     </header>
   );
 };

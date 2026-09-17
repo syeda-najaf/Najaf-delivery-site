@@ -1,0 +1,424 @@
+/* NAJAF NOVA // FORCE LAYER
+   Put this import LAST so the old page CSS cannot flatten the new visual system.
+*/
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+:root{
+  --nova-bg:#07090d;
+  --nova-bg2:#0b0e14;
+  --nova-panel:rgba(20,23,31,.82);
+  --nova-panel2:rgba(255,255,255,.055);
+  --nova-text:#f6f7f2;
+  --nova-muted:#9aa1ad;
+  --nova-line:rgba(255,255,255,.10);
+  --nova-lime:#caff3f;
+  --nova-violet:#a78bfa;
+  --nova-cyan:#66e7ff;
+  --nova-pink:#ff7acb;
+  --nova-shadow:0 30px 90px rgba(0,0,0,.44);
+}
+
+html,body,#root{min-height:100%;}
+html{background:var(--nova-bg)!important;}
+body{
+  margin:0!important;
+  background:
+    radial-gradient(80rem 48rem at -10% -10%,rgba(167,139,250,.14),transparent 58%),
+    radial-gradient(70rem 45rem at 110% 10%,rgba(202,255,63,.10),transparent 58%),
+    radial-gradient(60rem 38rem at 48% 105%,rgba(102,231,255,.06),transparent 60%),
+    linear-gradient(180deg,#07090d 0%,#0a0d12 54%,#07090d 100%)!important;
+  color:var(--nova-text)!important;
+  font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  overflow-x:hidden!important;
+}
+
+body:before{
+  content:""!important;
+  position:fixed!important;
+  inset:0!important;
+  pointer-events:none!important;
+  z-index:9997!important;
+  opacity:.05!important;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px)!important;
+  background-size:56px 56px!important;
+  mask-image:linear-gradient(to bottom,#000,transparent 92%)!important;
+}
+
+body:after{
+  content:""!important;
+  position:fixed!important;
+  width:38rem!important;
+  height:38rem!important;
+  right:-19rem!important;
+  bottom:-19rem!important;
+  border:1px solid rgba(202,255,63,.12)!important;
+  border-radius:50%!important;
+  box-shadow:0 0 0 70px rgba(202,255,63,.025),0 0 0 140px rgba(167,139,250,.02)!important;
+  pointer-events:none!important;
+  z-index:0!important;
+}
+
+#root{position:relative!important;isolation:isolate!important;}
+
+#root *{box-sizing:border-box!important;}
+#root a{color:inherit;}
+#root button{font-family:inherit!important;}
+
+/* Any old page shell becomes the Nova canvas. */
+main,
+section,
+article,
+[class*="page"],
+[class*="Page"],
+[class*="home"],
+[class*="Home"],
+[class*="Domino"],
+[class*="dashboard"],
+[class*="Dashboard"]{
+  position:relative;
+}
+
+[class*="Domino"],
+[class*="domino"]{
+  background:transparent!important;
+  color:var(--nova-text)!important;
+}
+
+/* Header / navigation */
+header,
+nav,
+[class*="navbar"],
+[class*="Navbar"],
+[class*="header"],
+[class*="Header"]{
+  background:rgba(8,10,14,.76)!important;
+  color:var(--nova-text)!important;
+  border-color:var(--nova-line)!important;
+  box-shadow:0 12px 40px rgba(0,0,0,.24)!important;
+  backdrop-filter:blur(20px) saturate(140%)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(140%)!important;
+}
+
+header a,nav a,[class*="navbar"] a,[class*="Navbar"] a{
+  color:rgba(246,247,242,.78)!important;
+  font-weight:600!important;
+  transition:.2s ease!important;
+}
+header a:hover,nav a:hover,[class*="navbar"] a:hover,[class*="Navbar"] a:hover{
+  color:var(--nova-lime)!important;
+}
+
+/* Brand / logo */
+[class*="logo"],
+[class*="Logo"],
+[class*="brand"],
+[class*="Brand"]{
+  font-family:"Space Grotesk",sans-serif!important;
+  font-weight:700!important;
+  letter-spacing:-.04em!important;
+  color:var(--nova-text)!important;
+}
+
+[class*="logo"] span,[class*="Logo"] span{color:var(--nova-lime)!important;}
+
+/* Hero */
+[class*="hero"],
+[class*="Hero"],
+[class*="banner"],
+[class*="Banner"]{
+  background:
+    radial-gradient(30rem 18rem at 75% 25%,rgba(167,139,250,.18),transparent 70%),
+    radial-gradient(24rem 18rem at 20% 30%,rgba(202,255,63,.10),transparent 70%),
+    linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.012))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:32px!important;
+  box-shadow:var(--nova-shadow)!important;
+  overflow:hidden!important;
+}
+
+[class*="hero"] h1,[class*="Hero"] h1,
+[class*="banner"] h1,[class*="Banner"] h1,
+h1{
+  font-family:"Space Grotesk",sans-serif!important;
+  color:var(--nova-text)!important;
+  letter-spacing:-.055em!important;
+  line-height:.95!important;
+}
+
+h2,h3,h4{
+  font-family:"Space Grotesk",sans-serif!important;
+  color:var(--nova-text)!important;
+  letter-spacing:-.035em!important;
+}
+
+p,span,label,small{color:inherit;}
+
+/* Cards everywhere */
+[class*="card"],
+[class*="Card"],
+[class*="food-item"],
+[class*="FoodItem"],
+[class*="product"],
+[class*="Product"],
+[class*="restaurant"],
+[class*="Restaurant"]{
+  background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.028))!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:26px!important;
+  color:var(--nova-text)!important;
+  box-shadow:0 18px 46px rgba(0,0,0,.18)!important;
+  overflow:hidden!important;
+}
+
+[class*="card"]:hover,[class*="Card"]:hover,
+[class*="food-item"]:hover,[class*="restaurant"]:hover{
+  transform:translateY(-4px)!important;
+  border-color:rgba(202,255,63,.30)!important;
+  box-shadow:0 26px 65px rgba(0,0,0,.28),0 0 35px rgba(202,255,63,.06)!important;
+}
+
+img{
+  border-radius:inherit!important;
+}
+
+/* Buttons: no pizza-chain red buttons */
+button,
+[class*="btn"],
+[class*="Btn"],
+[class*="button"],
+[class*="Button"]{
+  border-radius:999px!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  background:rgba(255,255,255,.06)!important;
+  color:var(--nova-text)!important;
+  box-shadow:none!important;
+  transition:transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease!important;
+}
+
+button:hover,
+[class*="btn"]:hover,
+[class*="Btn"]:hover,
+[class*="button"]:hover,
+[class*="Button"]:hover{
+  transform:translateY(-2px)!important;
+  border-color:rgba(202,255,63,.35)!important;
+  background:rgba(202,255,63,.09)!important;
+  color:var(--nova-lime)!important;
+}
+
+button[class*="primary"],
+[class*="primary"],
+[class*="Primary"],
+[class*="checkout"],
+[class*="Checkout"],
+[class*="order-btn"],
+[class*="OrderBtn"]{
+  background:var(--nova-lime)!important;
+  border-color:var(--nova-lime)!important;
+  color:#0a0c08!important;
+  font-weight:800!important;
+  box-shadow:0 12px 32px rgba(202,255,63,.18)!important;
+}
+
+button[class*="primary"]:hover,
+[class*="primary"]:hover,
+[class*="Primary"]:hover,
+[class*="checkout"]:hover,
+[class*="Checkout"]:hover{
+  background:#ddff79!important;
+  color:#080a08!important;
+  box-shadow:0 16px 40px rgba(202,255,63,.26)!important;
+}
+
+/* Search */
+input,textarea,select,
+[class*="search"],
+[class*="Search"] input{
+  background:rgba(255,255,255,.055)!important;
+  color:var(--nova-text)!important;
+  border:1px solid rgba(255,255,255,.11)!important;
+  border-radius:18px!important;
+  outline:none!important;
+}
+input::placeholder,textarea::placeholder{color:#727987!important;}
+input:focus,textarea:focus,select:focus,
+[class*="Search"] input:focus{
+  border-color:rgba(202,255,63,.55)!important;
+  box-shadow:0 0 0 4px rgba(202,255,63,.08)!important;
+}
+
+/* Tabs / category chips */
+[class*="tab"],
+[class*="Tab"],
+[class*="chip"],
+[class*="Chip"],
+[class*="category"],
+[class*="Category"]{
+  border:1px solid rgba(255,255,255,.10)!important;
+  background:rgba(255,255,255,.045)!important;
+  color:#b9bec8!important;
+  border-radius:999px!important;
+}
+
+[class*="tab"].active,[class*="Tab"].active,
+[class*="chip"].active,[class*="Chip"].active,
+[class*="category"].active,[class*="Category"].active,
+[class*="tab"][aria-selected="true"],[class*="category"][aria-selected="true"]{
+  background:rgba(202,255,63,.13)!important;
+  color:var(--nova-lime)!important;
+  border-color:rgba(202,255,63,.32)!important;
+}
+
+/* Cart / basket */
+[class*="cart"],
+[class*="Cart"],
+[class*="basket"],
+[class*="Basket"]{
+  color:var(--nova-text)!important;
+}
+
+[class*="cart-item"],
+[class*="CartItem"],
+[class*="basket-item"]{
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:20px!important;
+}
+
+/* Checkout / forms */
+[class*="checkout"],
+[class*="Checkout"],
+[class*="payment"],
+[class*="Payment"],
+[class*="form-card"],
+[class*="FormCard"]{
+  background:rgba(16,19,26,.82)!important;
+  border-color:rgba(255,255,255,.09)!important;
+  color:var(--nova-text)!important;
+}
+
+/* Order history / order cards */
+[class*="order"],
+[class*="Order"],
+[class*="history"],
+[class*="History"]{
+  color:var(--nova-text)!important;
+}
+
+[class*="order-card"],
+[class*="OrderCard"],
+[class*="order-item"],
+[class*="OrderItem"],
+[class*="history-card"],
+[class*="HistoryCard"]{
+  background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025))!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:24px!important;
+}
+
+/* Tracking / delivery map */
+[class*="tracking"],
+[class*="Tracking"],
+[class*="map"],
+[class*="Map"],
+[class*="delivery"],
+[class*="Delivery"]{
+  border-radius:26px!important;
+}
+
+[class*="map"],
+[class*="Map"]{
+  background:#0f141b!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:var(--nova-shadow)!important;
+}
+
+/* Status pills */
+[class*="status"],
+[class*="Status"],
+[class*="badge"],
+[class*="Badge"]{
+  border-radius:999px!important;
+  background:rgba(202,255,63,.10)!important;
+  border:1px solid rgba(202,255,63,.20)!important;
+  color:var(--nova-lime)!important;
+}
+
+/* Login / auth */
+[class*="login"],
+[class*="Login"],
+[class*="signup"],
+[class*="Signup"],
+[class*="auth"],
+[class*="Auth"]{
+  background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025))!important;
+  border-color:rgba(255,255,255,.10)!important;
+  color:var(--nova-text)!important;
+}
+
+/* Modal / toast / overlay */
+[class*="modal"],
+[class*="Modal"],
+[class*="dialog"],
+[class*="Dialog"]{
+  background:rgba(12,15,21,.96)!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:28px!important;
+  color:var(--nova-text)!important;
+  box-shadow:0 40px 110px rgba(0,0,0,.55)!important;
+  backdrop-filter:blur(22px)!important;
+}
+
+[class*="toast"],
+[class*="Toast"]{
+  background:rgba(17,20,27,.95)!important;
+  color:var(--nova-text)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:18px!important;
+  box-shadow:0 18px 50px rgba(0,0,0,.35)!important;
+}
+
+/* Footer */
+footer,
+[class*="footer"],
+[class*="Footer"]{
+  background:#06080c!important;
+  color:#979eaa!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+}
+footer a,[class*="footer"] a,[class*="Footer"] a{color:#c6ccd6!important;}
+footer a:hover,[class*="footer"] a:hover{color:var(--nova-lime)!important;}
+
+/* Plain white surfaces from the original template are neutralized */
+[style*="background: white"],
+[style*="background:white"],
+[style*="background-color: white"],
+[style*="background-color:white"]{
+  background:rgba(16,19,26,.88)!important;
+  color:var(--nova-text)!important;
+}
+
+/* old red / chain-style accents get converted to the Nova accent */
+[class*="red"], [class*="Red"]{
+  --bs-danger:#caff3f!important;
+}
+
+/* Mobile */
+@media (max-width:900px){
+  header,nav,[class*="navbar"],[class*="Navbar"]{
+    border-radius:0 0 20px 20px!important;
+  }
+  [class*="hero"],[class*="Hero"],[class*="banner"],[class*="Banner"]{
+    border-radius:24px!important;
+  }
+  h1{font-size:clamp(2.4rem,12vw,5rem)!important;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+}
