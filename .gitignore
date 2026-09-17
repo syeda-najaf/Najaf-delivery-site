@@ -5,3 +5,5 @@ npm-cache
 .DS_Store
 .vercel
 .env*
+
+.vercel
