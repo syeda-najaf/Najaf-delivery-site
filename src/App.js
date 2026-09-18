@@ -1,4 +1,4 @@
-
+﻿
 import React, { useEffect, useState } from 'react';
 import {
   Link,
@@ -13,11 +13,12 @@ import {
 import RealDeliveryMap from './components/RealDeliveryMap';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import {
-  createCodOrder,
-  fetchMyOrders,
-  geocodeAddress,
-  reverseGeocode,
-  upsertProfile,
+createCodOrder,
+fetchMyOrders,
+geocodeAddress,
+reverseGeocode,
+sendOrderConfirmation,
+upsertProfile
 } from './lib/api';
 
 const MENU = [
@@ -1733,13 +1734,35 @@ function CheckoutPage({
         quantity: item.quantity,
       }));
 
-      const created = await createCodOrder({
-        items,
-        address,
-        destination,
-      });
+  const created = await createCodOrder({
+  items,
+  address,
+  destination,
+});
 
-      clearCart();
+try {
+  await sendOrderConfirmation({
+    to: user.email,
+    subject: `NAJAF Order Confirmed • ${created.dbOrderId}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:650px;margin:auto;padding:24px">
+        <h1>NAJAF NOVA FOOD</h1>
+        <h2>Order confirmed 🎉</h2>
+        <p>Order: <strong>${created.dbOrderId}</strong></p>
+        <p>Payment: <strong>Cash on Delivery</strong></p>
+        <p>Delivery address: ${address}</p>
+        <p>Your order has been successfully placed.</p>
+      </div>
+    `,
+  });
+} catch (emailError) {
+  console.error(
+    'Order created, but confirmation email could not be sent:',
+    emailError
+  );
+}
+
+clearCart();
 
       setToast({
         type: 'success',
@@ -2025,15 +2048,23 @@ function AuthPage({ setToast }) {
           text: 'Your NAJAF account is ready.',
         });
       } else {
-        const { error } =
-          await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+    const { data, error } =
+  await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
 
-        if (error) throw error;
+if (error) throw error;
 
-        setToast({
+if (!data.session?.user) {
+  throw new Error(
+    'Login succeeded, but the Supabase session was not created. Please try again.'
+  );
+}
+
+setUser(data.session.user);
+
+setToast({
           type: 'success',
           title: 'Signed in',
           text: 'Your live account is connected.',

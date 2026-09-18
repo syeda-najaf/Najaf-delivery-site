@@ -98,14 +98,38 @@ export async function fetchMyOrders() {
   if (error) throw error;
   return data || [];
 }
-
 export async function upsertProfile({ userId, fullName, phone }) {
   const client = requireSupabase();
   const { data, error } = await client
     .from('profiles')
-    .upsert({ id: userId, full_name: fullName, phone, updated_at: new Date().toISOString() })
+    .upsert({
+      id: userId,
+      full_name: fullName,
+      phone,
+      updated_at: new Date().toISOString()
+    })
     .select()
     .single();
+
   if (error) throw error;
+  return data;
+}
+
+export async function sendOrderConfirmation({ to, subject, html }) {
+  const client = requireSupabase();
+
+  const { data, error } = await client.functions.invoke(
+    'send-order-confirmation',
+    {
+      body: {
+        to,
+        subject,
+        html,
+      },
+    }
+  );
+
+  if (error) throw error;
+
   return data;
 }
