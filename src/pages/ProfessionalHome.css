@@ -1,0 +1,4 @@
+/* Optional polish for the existing home page */
+@media (min-width: 992px){
+  .hero__content{padding-right:38px}
+}

@@ -1,0 +1,9 @@
+﻿node_modules
+/build
+.env
+npm-cache
+.DS_Store
+.vercel
+.env*
+
+.vercel
