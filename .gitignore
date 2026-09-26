@@ -7,3 +7,6 @@ npm-cache
 .env*
 
 .vercel
+
+.vercel
+.env*
