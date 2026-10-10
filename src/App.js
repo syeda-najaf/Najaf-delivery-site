@@ -10,6 +10,8 @@ import {
 } from 'react-router-dom';
 
 import RealDeliveryMap from './components/RealDeliveryMap';
+import TrackingStatus from './components/TrackingStatus';
+import MapFallback from './components/MapFallback';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import {
   createCodOrder,
@@ -2705,73 +2707,130 @@ function OrdersPage({ orders }) {
   const { city } = useCity();
 
   return (
-    <div className="page-shell page-top">
-      <SectionHead
-        kicker={`${city.name} orders`}
-        title="Every order, one timeline."
-      />
+    <div className="page-shell page-top orders-page">
+      <div className="orders-hero">
+        <div className="orders-hero-copy">
+          <span className="orders-eyebrow">NAJAF DELIVERY EXPERIENCE</span>
+          <h1>Your orders,<br /><span>your timeline.</span></h1>
+          <p>Every delicious moment, tracked from kitchen to doorstep.</p>
+        </div>
+        <div className="orders-hero-icon" aria-hidden="true">
+          <span>✦</span>🍔
+        </div>
+      </div>
 
-      {orders.length ? (
+      <div className="orders-section-heading">
+        <div>
+          <span className="orders-eyebrow">YOUR ACTIVITY</span>
+          <h2>Order history</h2>
+        </div>
+        <span className="orders-count">
+          {orders.length} {orders.length === 1 ? 'ORDER' : 'ORDERS'}
+        </span>
+      </div>
+
+      {orders.length > 0 ? (
         <div className="orders-list">
           {orders.map((order) => (
             <OrderCard key={order.id} order={order} city={city} />
           ))}
         </div>
       ) : (
-        <EmptyState
-          title="No orders yet."
-          text={`Your first ${city.name} order will appear here.`}
-          action="Browse menu"
-          to="/menu"
-        />
+        <div className="orders-empty">
+          <div className="orders-empty-icon">🥡</div>
+          <span className="orders-eyebrow">THE TABLE IS WAITING</span>
+          <h2>No orders yet</h2>
+          <p>Your next favourite meal is only a few clicks away. Explore the menu and make it happen.</p>
+          <Link className="btn btn-primary" to="/menu">
+            Explore the menu <span>↗</span>
+          </Link>
+        </div>
       )}
     </div>
   );
 }
 
 function OrderCard({ order, city }) {
+  const status = String(order.status || order.rawStatus || 'Processing');
+  const normalizedStatus = status.toLowerCase();
+  const isDelivered = normalizedStatus.includes('deliver') && !normalizedStatus.includes('out for delivery');
+  const isCancelled = normalizedStatus.includes('cancel');
+  const statusClass = isDelivered
+    ? 'delivered'
+    : isCancelled
+    ? 'cancelled'
+    : normalizedStatus.includes('out for delivery')
+    ? 'on-the-way'
+    : 'preparing';
+
+  const itemNames = (Array.isArray(order.items) ? order.items : [])
+    .map((item) => item.name)
+    .filter(Boolean);
+  const placedDate = order.placedAt ? new Date(order.placedAt) : null;
+  const validDate = placedDate && !Number.isNaN(placedDate.getTime());
+
   return (
     <article className="order-card">
-      <div className="order-head">
-        <div>
-          <div className="order-id">{order.id}</div>
-          <h3>{order.items.map((i) => i.name).join(' · ')}</h3>
-          <p>
-            {order.placedAt
-              ? new Date(order.placedAt).toLocaleString('en-IN', {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                })
-              : 'Just now'}
+      <div className="order-card-top">
+        <div className="order-brand-mark">N.</div>
+        <div className="order-identity">
+          <span className="order-id">ORDER #{String(order.id).slice(-8)}</span>
+          <p className="order-date">
+            {validDate
+              ? placedDate.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+              : 'Recently placed'}
           </p>
         </div>
-        <span className="status-pill">{order.status}</span>
+        <span className={`status-pill ${statusClass}`}>
+          <span className="status-dot" />{status}
+        </span>
+      </div>
+
+      <div className="order-card-divider" />
+
+      <div className="order-card-main">
+        <div className="order-meal-icon">🍽️</div>
+        <div className="order-meal-info">
+          <h3>{itemNames.length ? itemNames.join(' · ') : 'Your delicious order'}</h3>
+          <p>{itemNames.length} {itemNames.length === 1 ? 'item' : 'items'} · {city.name}</p>
+        </div>
       </div>
 
       <div className="order-data">
-        <span>{money(order.total, city)}</span>
-        <span>ETA {order.eta}</span>
-        <span>Rider {order.rider}</span>
+        <div className="order-info-tile">
+          <span className="order-info-label">TOTAL</span>
+          <strong>{money(order.total, city)}</strong>
+        </div>
+        <div className="order-info-tile">
+          <span className="order-info-label">EST. ARRIVAL</span>
+          <strong>{order.eta || 'To be confirmed'}</strong>
+        </div>
+        <div className="order-info-tile">
+          <span className="order-info-label">DELIVERY PARTNER</span>
+          <strong>{order.rider || 'Being assigned'}</strong>
+        </div>
       </div>
 
-      <div className="order-actions">
-        <Link
-          className="btn btn-primary compact"
-          to={`/tracking/${order.id}`}
-        >
-          Track live
-          <Icon name="arrow" size={15} />
-        </Link>
-        <Link
-          className="btn btn-outline compact"
-          to={`/map/${order.id}`}
-        >
-          Open route
-          <Icon name="map" size={15} />
-        </Link>
-        <Link className="text-link" to={`/success/${order.id}`}>
-          Receipt
-        </Link>
+      <div className="order-card-bottom">
+        <div className="order-live-note">
+          <span className="order-live-indicator" />
+          <span>{isDelivered ? 'Order delivered. Enjoy your meal!' : isCancelled ? 'This order was cancelled.' : 'Your delivery journey, at a glance.'}</span>
+        </div>
+        <div className="order-actions">
+          {!isCancelled && (
+            <>
+              <Link className="btn btn-primary compact" to={`/tracking/${order.id}`}>
+                Track order <span>↗</span>
+              </Link>
+              <Link className="btn btn-outline compact" to={`/map/${order.id}`}>
+                View route <span>⌖</span>
+              </Link>
+            </>
+          )}
+          <Link className="text-link" to={`/success/${order.id}`}>
+            View receipt <span>→</span>
+          </Link>
+        </div>
       </div>
     </article>
   );
@@ -2946,75 +3005,18 @@ function TrackingPage({ orders }) {
         </section>
 
         <aside className="tracking-sidebar ultra-sidebar">
-          <div className="eta-card ultra-eta-card">
-            <div>
-              <small>LIVE ETA · {city.short}</small>
-              <strong>{eta}</strong>
-              <span>{order?.status || 'Waiting for order data'}</span>
-            </div>
-            <span className="eta-ring live-ring">LIVE</span>
-          </div>
-
-          <div className="timeline ultra-timeline">
-            {TRACK_STEPS.map((item, index) => (
-              <div
-                className={`timeline-step ${
-                  index < statusStep
-                    ? 'done'
-                    : index === statusStep
-                    ? 'current'
-                    : ''
-                }`}
-                key={item.title}
-              >
-                <span className="step-icon">{item.icon}</span>
-                <div>
-                  <strong>{item.title}</strong>
-                  <small>{item.meta}</small>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="rider-card ultra-rider-card">
-            <div className="rider-avatar">
-              {(order?.rider || 'A').slice(0, 1)}
-            </div>
-            <div className="rider-details">
-              <small>YOUR {city.short} RIDER</small>
-              <strong>
-                {order?.rider || 'Assigned after dispatch'}
-              </strong>
-              <span>
-                {riderPos
-                  ? `Live · ${riderPos.lat.toFixed(3)}, ${riderPos.lng.toFixed(3)}`
-                  : order?.rider_lat
-                  ? 'GPS signal connected'
-                  : 'Waiting for rider signal'}
-              </span>
-            </div>
-            <a
-              className="icon-btn"
-              href={
-                order?.rider_phone
-                  ? `tel:${order.rider_phone}`
-                  : undefined
-              }
-            >
-              CALL
-            </a>
-          </div>
-
-          <div className="telemetry-card">
-            <div>
-              <span className="telemetry-dot" />
-              Realtime channel
-            </div>
-            <strong>
-              {riderPos ? 'Connected' : 'Awaiting signal'}
-            </strong>
-            <small>Supabase order updates + Mapbox route</small>
-          </div>
+          <TrackingStatus
+            rawStatus={order?.rawStatus || 'preparing'}
+            eta={eta}
+            rider={order?.rider || 'Ayaan'}
+            riderConnected={!!riderPos}
+            onCall={() => {
+              window.location.href = 'tel:+9640000000000';
+            }}
+            onMessage={() => {
+              window.location.href = 'sms:+9640000000000';
+            }}
+          />
         </aside>
       </div>
     </div>

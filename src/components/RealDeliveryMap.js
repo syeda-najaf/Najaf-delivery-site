@@ -1,400 +1,304 @@
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { supabase } from "../lib/supabase";
+import "./LiveLocation.css";
 
-const FALLBACK_CENTER = [77.5946, 12.9716];
+const TOKEN = process.env.REACT_APP_MAPBOX_TOKEN || "";
+const DEFAULT_CENTER = [77.5946, 12.9716]; // Bengaluru fallback only, not a claimed live location.
 
-const token =
-  process.env.REACT_APP_MAPBOX_ACCESS_TOKEN ||
-  process.env.REACT_APP_MAPBOX_TOKEN ||
-  '';
-
-function makeMarker(className, label, inner) {
-  const node = document.createElement('div');
-  node.className = className;
-  node.setAttribute('aria-label', label);
-  if (inner) node.innerHTML = inner;
-  return node;
+function numericPoint(lng, lat) {
+  const x = Number(lng);
+  const y = Number(lat);
+  return Number.isFinite(x) && Number.isFinite(y) && Math.abs(x) <= 180 && Math.abs(y) <= 90
+    ? [x, y]
+    : null;
 }
 
-async function geocode(text) {
-  if (!token || !text) return null;
-  try {
-    const url = `https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(
-      text
-    )}&country=IN&limit=1&access_token=${token}`;
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    const coords = data.features?.[0]?.geometry?.coordinates;
-    return coords || null;
-  } catch {
-    return null;
-  }
-}
-
-async function route(origin, destination) {
-  if (!token || !origin || !destination) return null;
-  try {
-    const coords = `${origin[0]},${origin[1]};${destination[0]},${destination[1]}`;
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?alternatives=false&overview=full&geometries=geojson&access_token=${token}`;
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.routes?.[0] || null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * RealDeliveryMap
- *
- * Props (all optional except map init):
- *   mode: 'tracking' | 'full'
- *   city: { center: { lat, lng }, name, short }
- *   order: Supabase order row (has rider_lat/lng, destination_lat/lng)
- *   userCoords: { lat, lng } | null      // customer's live GPS
- *   riderCoords: { lat, lng } | null     // rider's live GPS (from realtime)
- *   destination: { lat, lng }            // delivery address
- *   destinationText: string
- *   statusStep: 0..4
- */
 export default function RealDeliveryMap({
-  mode = 'tracking',
-  destinationText = '7th Cross Road, Kodihalli, Bengaluru',
+  mode = "tracking",
   order,
-  city,
-  userCoords: userCoordsProp,
-  riderCoords: riderCoordsProp,
-  destination: destinationProp,
+  destinationText = "",
+  statusStep = 0,
 }) {
-  const mapContainerRef = useRef(null);
+  const mapNode = useRef(null);
   const mapRef = useRef(null);
-  const markersRef = useRef({});
-  const watchRef = useRef(null);
-  const routeReadyRef = useRef(false);
+  const riderMarker = useRef(null);
+  const customerMarker = useRef(null);
+  const watchId = useRef(null);
+  const lastWriteAt = useRef(0);
+  const [currentOrder, setCurrentOrder] = useState(order || null);
+  const [sharing, setSharing] = useState(false);
+  const [status, setStatus] = useState("Waiting for location");
+  const [error, setError] = useState("");
+  const [userId, setUserId] = useState(null);
 
-  const [status, setStatus] = useState('Connecting to Mapbox…');
-  const [userCoords, setUserCoords] = useState(null);
-  const [destination, setDestination] = useState(null);
-  const [routeInfo, setRouteInfo] = useState(null);
-  const [distance, setDistance] = useState('--');
+  const orderId = order?.dbOrderId || order?.id;
+  const riderPoint = numericPoint(currentOrder?.rider_lng, currentOrder?.rider_lat);
+  const customerPoint = numericPoint(
+    currentOrder?.customer_lng ?? currentOrder?.delivery_lng,
+    currentOrder?.customer_lat ?? currentOrder?.delivery_lat
+  );
 
-  /* ---------- normalize coords from any source ---------- */
-  const normUser = userCoordsProp
-    ? [userCoordsProp.lng, userCoordsProp.lat]
-    : null;
-
-  const normRider = riderCoordsProp
-    ? [riderCoordsProp.lng, riderCoordsProp.lat]
-    : order?.rider_lng != null && order?.rider_lat != null
-    ? [Number(order.rider_lng), Number(order.rider_lat)]
-    : null;
-
-  const normDestination = destinationProp
-    ? [destinationProp.lng, destinationProp.lat]
-    : order?.destination_lng != null && order?.destination_lat != null
-    ? [Number(order.destination_lng), Number(order.destination_lat)]
-    : null;
-
-  /* ---------- initialize map once ---------- */
   useEffect(() => {
-    if (!token || !mapContainerRef.current) {
-      setStatus('Add REACT_APP_MAPBOX_ACCESS_TOKEN to enable the real map.');
+    let alive = true;
+    supabase?.auth.getUser().then(({ data }) => {
+      if (alive) setUserId(data?.user?.id || null);
+    });
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    setCurrentOrder(order || null);
+  }, [order]);
+
+  useEffect(() => {
+    if (!supabase || !orderId) return undefined;
+    let alive = true;
+
+    const load = async () => {
+      const { data, error: loadError } = await supabase
+        .from("orders")
+        .select("id,user_id,rider_id,rider_lat,rider_lng,rider_location_updated_at,customer_lat,customer_lng,delivery_lat,delivery_lng,status")
+        .eq("id", orderId)
+        .maybeSingle();
+
+      if (!alive) return;
+      if (loadError) {
+        setError(loadError.message);
+        return;
+      }
+      if (data) setCurrentOrder((old) => ({ ...(old || {}), ...data }));
+    };
+
+    load();
+    const channel = supabase
+      .channel(`najaf-live-order-${orderId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `id=eq.${orderId}` },
+        (payload) => {
+          if (payload.new) setCurrentOrder((old) => ({ ...(old || {}), ...payload.new }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      alive = false;
+      supabase.removeChannel(channel);
+    };
+  }, [orderId]);
+
+  useEffect(() => {
+    if (!mapNode.current || mapRef.current) return undefined;
+    if (!TOKEN) {
+      setError("Mapbox token missing. Add REACT_APP_MAPBOX_TOKEN to .env.local and Vercel.");
       return undefined;
     }
 
-    mapboxgl.accessToken = token;
-
-    const initialCenter =
-      normDestination || normUser || (city?.center ? [city.center.lng, city.center.lat] : null) || FALLBACK_CENTER;
-
+    mapboxgl.accessToken = TOKEN;
     const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: initialCenter,
-      zoom: mode === 'full' ? 12 : 13.2,
-      pitch: mode === 'full' ? 0 : 40,
+      container: mapNode.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: customerPoint || riderPoint || DEFAULT_CENTER,
+      zoom: customerPoint || riderPoint ? 14 : 11,
       attributionControl: true,
-      cooperativeGestures: false,
     });
-
-    map.addControl(
-      new mapboxgl.NavigationControl({ visualizePitch: true }),
-      'bottom-right'
-    );
-
-    map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserHeading: true,
-        showUserLocation: true,
-      }),
-      'top-right'
-    );
-
-    map.on('load', async () => {
-      setStatus('Map online');
-
-      /* --- destination marker --- */
-      const dest = normDestination || (await geocode(destinationText));
-      if (dest) {
-        setDestination(dest);
-        markersRef.current.destination = new mapboxgl.Marker({
-          element: makeMarker('najaf-pin najaf-pin-destination', 'Delivery destination', '⌂'),
-        })
-          .setLngLat(dest)
-          .setPopup(new mapboxgl.Popup({ offset: 20 }).setText(destinationText))
-          .addTo(map);
-      }
-
-      /* --- rider marker (if we already have coords) --- */
-      if (normRider) {
-        markersRef.current.rider = new mapboxgl.Marker({
-          element: makeMarker('najaf-pin najaf-pin-rider', 'Rider', '🚴'),
-        })
-          .setLngLat(normRider)
-          .addTo(map);
-      }
-
-      /* --- user marker --- */
-      if (normUser) {
-        setUserCoords(normUser);
-        markersRef.current.user = new mapboxgl.Marker({
-          element: makeMarker('najaf-pin najaf-pin-user', 'You', '<span class="najaf-pin-dot"></span>'),
-        })
-          .setLngLat(normUser)
-          .addTo(map);
-      } else if ('geolocation' in navigator) {
-        /* fall back to browser GPS */
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const coords = [pos.coords.longitude, pos.coords.latitude];
-            setUserCoords(coords);
-            if (!markersRef.current.user) {
-              markersRef.current.user = new mapboxgl.Marker({
-                element: makeMarker('najaf-pin najaf-pin-user', 'You', '<span class="najaf-pin-dot"></span>'),
-              })
-                .setLngLat(coords)
-                .addTo(map);
-            } else {
-              markersRef.current.user.setLngLat(coords);
-            }
-          },
-          () => setStatus('Map online • location permission not granted'),
-          { enableHighAccuracy: true, timeout: 9000, maximumAge: 10000 }
-        );
-
-        watchRef.current = navigator.geolocation.watchPosition(
-          (pos) => {
-            const coords = [pos.coords.longitude, pos.coords.latitude];
-            setUserCoords(coords);
-            markersRef.current.user?.setLngLat(coords);
-          },
-          () => {},
-          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
-        );
-      }
-
-      routeReadyRef.current = true;
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+    map.addControl(new mapboxgl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: false,
+      showUserHeading: true,
+    }), "top-right");
+    map.on("load", () => setStatus("Map ready"));
+    map.on("error", (event) => {
+      if (event?.error?.message) setError(event.error.message);
     });
-
     mapRef.current = map;
 
     return () => {
-      if (watchRef.current !== null && 'geolocation' in navigator) {
-        navigator.geolocation.clearWatch(watchRef.current);
-      }
-      Object.values(markersRef.current).forEach((m) => m?.remove());
-      markersRef.current = {};
-      routeReadyRef.current = false;
+      riderMarker.current?.remove();
+      customerMarker.current?.remove();
       map.remove();
       mapRef.current = null;
     };
+    // Map is initialized once. Marker updates are handled below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ---------- update user marker when prop changes ---------- */
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !normUser) return;
-    if (!markersRef.current.user) {
-      markersRef.current.user = new mapboxgl.Marker({
-        element: makeMarker('najaf-pin najaf-pin-user', 'You', '<span class="najaf-pin-dot"></span>'),
-      })
-        .setLngLat(normUser)
-        .addTo(map);
-    } else {
-      markersRef.current.user.setLngLat(normUser);
-    }
-    setUserCoords(normUser);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userCoordsProp?.lat, userCoordsProp?.lng]);
+    if (!map) return;
 
-  /* ---------- update rider marker when prop changes (realtime) ---------- */
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !normRider) return;
-
-    if (!markersRef.current.rider) {
-      markersRef.current.rider = new mapboxgl.Marker({
-        element: makeMarker('najaf-pin najaf-pin-rider', 'Rider', '🚴'),
-      })
-        .setLngLat(normRider)
-        .addTo(map);
-    } else {
-      markersRef.current.rider.setLngLat(normRider);
+    if (customerPoint) {
+      if (!customerMarker.current) {
+        customerMarker.current = new mapboxgl.Marker({ color: "#16a34a" })
+          .setLngLat(customerPoint)
+          .setPopup(new mapboxgl.Popup().setText("Delivery destination"))
+          .addTo(map);
+      } else customerMarker.current.setLngLat(customerPoint);
     }
 
-    map.flyTo({
-      center: normRider,
-      zoom: mode === 'full' ? 12.5 : 14,
-      duration: 1200,
-      essential: true,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [riderCoordsProp?.lat, riderCoordsProp?.lng, order?.rider_lat, order?.rider_lng]);
-
-  /* ---------- update destination marker when prop changes ---------- */
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !normDestination) return;
-    if (!markersRef.current.destination) {
-      markersRef.current.destination = new mapboxgl.Marker({
-        element: makeMarker('najaf-pin najaf-pin-destination', 'Delivery destination', '⌂'),
-      })
-        .setLngLat(normDestination)
-        .setPopup(new mapboxgl.Popup({ offset: 20 }).setText(destinationText))
-        .addTo(map);
-    } else {
-      markersRef.current.destination.setLngLat(normDestination);
+    if (riderPoint) {
+      if (!riderMarker.current) {
+        riderMarker.current = new mapboxgl.Marker({ color: "#f97316" })
+          .setLngLat(riderPoint)
+          .setPopup(new mapboxgl.Popup().setText("Live rider position"))
+          .addTo(map);
+      } else riderMarker.current.setLngLat(riderPoint);
     }
-    setDestination(normDestination);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationProp?.lat, destinationProp?.lng, order?.destination_lat, order?.destination_lng]);
 
-  /* ---------- draw route ---------- */
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !destination || !token || !routeReadyRef.current) return undefined;
+    const points = [customerPoint, riderPoint].filter(Boolean);
+    if (points.length === 2) {
+      const bounds = new mapboxgl.LngLatBounds(points[0], points[0]);
+      bounds.extend(points[1]);
+      map.fitBounds(bounds, { padding: 70, maxZoom: 15, duration: 700 });
+    } else if (points.length === 1) {
+      map.easeTo({ center: points[0], zoom: 15, duration: 700 });
+    }
+  }, [customerPoint?.[0], customerPoint?.[1], riderPoint?.[0], riderPoint?.[1]]);
 
-    const origin = normRider || userCoords || normUser;
-    if (!origin) return undefined;
-
-    let cancelled = false;
-
-    route(origin, destination).then((result) => {
-      if (cancelled || !result || !mapRef.current) return;
-
-      setRouteInfo(result);
-      setDistance(`${(result.distance / 1000).toFixed(1)} km`);
-
-      const feature = {
-        type: 'Feature',
-        geometry: result.geometry,
-        properties: {},
-      };
-
-      const source = mapRef.current.getSource('najaf-route');
-
-      if (source) {
-        source.setData(feature);
-      } else {
-        mapRef.current.addSource('najaf-route', {
-          type: 'geojson',
-          data: feature,
-        });
-
-        mapRef.current.addLayer({
-          id: 'najaf-route-glow',
-          type: 'line',
-          source: 'najaf-route',
-          paint: {
-            'line-color': '#b7ff3c',
-            'line-width': 10,
-            'line-opacity': 0.17,
-            'line-blur': 3,
-          },
-        });
-
-        mapRef.current.addLayer({
-          id: 'najaf-route',
-          type: 'line',
-          source: 'najaf-route',
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: {
-            'line-color': '#c7ff55',
-            'line-width': 5,
-            'line-opacity': 0.95,
-          },
-        });
-      }
-
-      if (mode === 'full') {
-        const bounds = new mapboxgl.LngLatBounds();
-        result.geometry.coordinates.forEach((pair) => bounds.extend(pair));
-        mapRef.current.fitBounds(bounds, {
-          padding: 80,
-          duration: 850,
-          maxZoom: 15.5,
-        });
-      }
-    }).catch(() => {
-      setStatus('Map online • route unavailable right now');
-    });
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destination, normRider?.toString(), userCoords?.toString(), mode]);
-
-  /* ---------- keep status fresh ---------- */
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setStatus((value) =>
-        value.startsWith('Map online') ? value : 'Map online'
-      );
-    }, 5000);
-    return () => clearInterval(timer);
+  const stopSharing = useCallback(() => {
+    if (watchId.current !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchId.current);
+      watchId.current = null;
+    }
+    setSharing(false);
+    setStatus("Location sharing stopped");
   }, []);
 
-  const etaMinutes = routeInfo
-    ? Math.max(1, Math.round(routeInfo.duration / 60))
-    : order?.eta_minutes || null;
+  const startSharing = useCallback(async () => {
+    setError("");
+    if (!orderId) {
+      setError("Open a real order first. The demo route has no database order to update.");
+      return;
+    }
+    if (!supabase) {
+      setError("Supabase is not configured.");
+      return;
+    }
+    if (!navigator.geolocation) {
+      setError("This browser does not support GPS.");
+      return;
+    }
+    if (!window.isSecureContext && window.location.hostname !== "localhost") {
+      setError("GPS sharing requires HTTPS.");
+      return;
+    }
+
+    const { data, error: authError } = await supabase.auth.getUser();
+    const currentUser = data?.user;
+    if (authError || !currentUser) {
+      setError("Sign in with the account assigned as this order's rider.");
+      return;
+    }
+
+    // Never allow a customer to publish their location as a rider.
+    const { data: row, error: orderError } = await supabase
+      .from("orders")
+      .select("id,rider_id")
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (orderError) {
+      setError(orderError.message);
+      return;
+    }
+    if (!row || row.rider_id !== currentUser.id) {
+      setError("This account is not assigned as the rider for this order. Set orders.rider_id to this rider's Auth user ID.");
+      return;
+    }
+
+    setUserId(currentUser.id);
+    setSharing(true);
+    setStatus("Requesting GPS permission…");
+
+    watchId.current = navigator.geolocation.watchPosition(
+      async (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        setStatus(`GPS active · accuracy ${Math.round(accuracy || 0)} m`);
+        const map = mapRef.current;
+        if (map) {
+          const point = [longitude, latitude];
+          if (!riderMarker.current) {
+            riderMarker.current = new mapboxgl.Marker({ color: "#f97316" })
+              .setLngLat(point)
+              .setPopup(new mapboxgl.Popup().setText("Live rider position"))
+              .addTo(map);
+          } else riderMarker.current.setLngLat(point);
+        }
+
+        // Throttle writes so a moving device does not flood the database.
+        const now = Date.now();
+        if (now - lastWriteAt.current < 5000) return;
+        lastWriteAt.current = now;
+
+        const { error: updateError } = await supabase.rpc("update_rider_location", {
+          p_order_id: orderId,
+          p_lat: latitude,
+          p_lng: longitude,
+        });
+
+        if (updateError) {
+          setError(`Could not publish rider GPS: ${updateError.message}`);
+        }
+      },
+      (geoError) => {
+        const messages = {
+          1: "GPS permission denied. Allow location access in browser settings.",
+          2: "Device location is unavailable. Turn on Location Services and retry.",
+          3: "GPS request timed out. Retry in an area with a better signal.",
+        };
+        setError(messages[geoError.code] || geoError.message || "GPS error.");
+        stopSharing();
+      },
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 }
+    );
+  }, [orderId, stopSharing]);
+
+  useEffect(() => () => {
+    if (watchId.current !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchId.current);
+    }
+  }, []);
+
+  const isAssignedRider = Boolean(userId && currentOrder?.rider_id === userId);
 
   return (
-    <div className={`real-map ${mode === 'full' ? 'real-map-full' : ''}`}>
-      <div ref={mapContainerRef} className="leaflet-map" />
-
-      {!token && (
-        <div className="map-loading">
-          <strong>Map connection not configured</strong>
-          <small>
-            Add REACT_APP_MAPBOX_ACCESS_TOKEN in .env and restart.
-          </small>
-        </div>
-      )}
-
-      <div className="map-hud">
+    <div className={`najaf-live-map ${mode === "full" ? "najaf-live-map-full" : ""}`}>
+      <div className="najaf-map-topbar">
         <div>
-          <span className={`telemetry-dot ${normRider ? 'live' : ''}`} /> {status}
+          <span className="najaf-map-eyebrow">NAJAF NOVA · LIVE DELIVERY</span>
+          <strong>{riderPoint ? "Rider signal received" : "Waiting for rider signal"}</strong>
+          <small>{currentOrder?.rider_location_updated_at
+            ? `Last update: ${new Date(currentOrder.rider_location_updated_at).toLocaleTimeString()}`
+            : status}</small>
         </div>
-        <strong>
-          {distance}
-          {etaMinutes ? ` · ${etaMinutes} min` : ''}
-        </strong>
+        {isAssignedRider && (
+          <button
+            type="button"
+            className={sharing ? "najaf-map-stop" : "najaf-map-share"}
+            onClick={sharing ? stopSharing : startSharing}
+          >
+            {sharing ? "Stop sharing" : "Start rider GPS"}
+          </button>
+        )}
       </div>
 
-      <div className="map-signal">
-        NAJAF ROUTE <span /> LIVE
+      <div ref={mapNode} className="najaf-map-canvas" aria-label="Live delivery map" />
+
+      <div className="najaf-map-legend">
+        <span><i className="najaf-legend-customer" /> Delivery destination</span>
+        <span><i className="najaf-legend-rider" /> Rider location</span>
+        <span>{destinationText || "Destination appears after address is saved"}</span>
       </div>
 
-      <div className="map-credit">
-        © Mapbox · OpenStreetMap contributors
-      </div>
+      {error && <p className="najaf-map-error" role="alert">{error}</p>}
+      {!orderId && <p className="najaf-map-note">Place an order to activate its live tracking channel.</p>}
+      {orderId && !riderPoint && <p className="najaf-map-note">The rider must sign in, be assigned to this order, and tap “Start rider GPS”.</p>}
+      {typeof statusStep === "number" && statusStep > 0 && (
+        <span className="najaf-map-step">Delivery progress: step {statusStep + 1}</span>
+      )}
     </div>
   );
 }

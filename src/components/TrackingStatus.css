@@ -1,0 +1,316 @@
+.ts-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- Live status ribbon ---------- */
+.ts-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #14532D 0%, #166534 55%, #059669 130%);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(20, 83, 45, .18);
+  position: relative;
+  overflow: hidden;
+}
+.ts-ribbon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 85% 20%, rgba(163, 230, 53, .28), transparent 45%);
+  pointer-events: none;
+}
+.ts-ribbon-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+.ts-ribbon-right {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+.ts-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #A3E635;
+  box-shadow: 0 0 0 5px rgba(163, 230, 53, .18), 0 0 14px rgba(163, 230, 53, .55);
+  animation: tsPulse 1.6s ease-in-out infinite;
+}
+@keyframes tsPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .55; transform: scale(.82); }
+}
+.ts-live-label {
+  font: 900 11px 'Space Grotesk', sans-serif;
+  letter-spacing: .18em;
+}
+.ts-ribbon-sep { opacity: .5; }
+.ts-ribbon-step,
+.ts-ribbon-status {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, .88);
+}
+.ts-ribbon-status {
+  color: #D9F99D;
+  font-weight: 800;
+}
+.ts-ribbon-eta-label {
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: rgba(255, 255, 255, .6);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.ts-ribbon-eta {
+  font: 800 20px 'Space Grotesk', sans-serif;
+  letter-spacing: -.02em;
+}
+
+/* ---------- Timeline ---------- */
+.ts-timeline {
+  background: #fff;
+  border: 1px solid rgba(20, 83, 45, .10);
+  border-radius: 22px;
+  padding: 10px;
+  box-shadow: 0 14px 38px rgba(20, 83, 45, .055);
+}
+.ts-step {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 12px;
+  border-radius: 16px;
+  transition: background .2s ease;
+}
+.ts-step + .ts-step {
+  border-top: 1px solid rgba(20, 83, 45, .07);
+}
+.ts-step--current {
+  background: linear-gradient(135deg, #F0FDF4, #ECFDF5);
+}
+.ts-step--upcoming {
+  opacity: .72;
+}
+.ts-step-icon {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font: 900 15px 'Space Grotesk', sans-serif;
+  background: #EAF7EE;
+  color: #166534;
+}
+.ts-step--done .ts-step-icon {
+  background: linear-gradient(135deg, #16A34A, #059669);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, .25);
+}
+.ts-step--current .ts-step-icon {
+  background: linear-gradient(135deg, #A3E635, #34D399);
+  color: #14532D;
+  box-shadow: 0 10px 24px rgba(163, 230, 53, .30);
+}
+.ts-step-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 16px;
+  border: 2px solid rgba(163, 230, 53, .55);
+  animation: tsRing 1.8s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes tsRing {
+  0%   { transform: scale(.85); opacity: .9; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+.ts-step-body strong {
+  display: block;
+  font: 800 13px 'Space Grotesk', sans-serif;
+  color: #17231B;
+}
+.ts-step-body small {
+  display: block;
+  margin-top: 3px;
+  color: #718078;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.ts-step--current .ts-step-body strong {
+  color: #14532D;
+}
+
+/* ---------- Rider card ---------- */
+.ts-rider {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid rgba(20, 83, 45, .10);
+  border-radius: 22px;
+  box-shadow: 0 14px 38px rgba(20, 83, 45, .055);
+}
+.ts-rider-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font: 900 22px 'Space Grotesk', sans-serif;
+  color: #14532D;
+  background: linear-gradient(135deg, #A3E635, #34D399);
+  box-shadow: 0 10px 22px rgba(163, 230, 53, .30);
+}
+.ts-rider-label {
+  font-size: 9px;
+  letter-spacing: .18em;
+  font-weight: 900;
+  color: #718078;
+  text-transform: uppercase;
+}
+.ts-rider-name {
+  display: block;
+  font: 800 17px 'Space Grotesk', sans-serif;
+  color: #17231B;
+  margin-top: 3px;
+}
+.ts-rider-meta {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  color: #53635A;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.ts-rider-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+.ts-rider-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.ts-rider-pill--waiting {
+  background: #ECFDF5;
+  color: #166534;
+  border: 1px solid rgba(22, 101, 52, .18);
+}
+.ts-rider-pill--live {
+  background: linear-gradient(135deg, #A3E635, #34D399);
+  color: #14532D;
+  border: 1px solid rgba(163, 230, 53, .5);
+  box-shadow: 0 8px 18px rgba(163, 230, 53, .30);
+}
+.ts-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: tsPulse 1.4s ease-in-out infinite;
+}
+.ts-rider-buttons {
+  display: flex;
+  gap: 6px;
+}
+.ts-rider-btn {
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #14532D, #166534);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.ts-rider-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(20, 83, 45, .25);
+}
+.ts-rider-btn--ghost {
+  background: #F0FDF4;
+  color: #14532D;
+  border: 1px solid rgba(20, 83, 45, .12);
+}
+.ts-rider-btn--ghost:hover {
+  box-shadow: 0 10px 20px rgba(20, 83, 45, .10);
+}
+
+/* ---------- Realtime channel chip ---------- */
+.ts-channel {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #F7FCF8;
+  border: 1px solid rgba(20, 83, 45, .08);
+}
+.ts-channel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #C5D3C8;
+}
+.ts-channel-dot.is-live {
+  background: #16A34A;
+  box-shadow: 0 0 0 5px rgba(22, 163, 74, .14);
+  animation: tsPulse 1.6s ease-in-out infinite;
+}
+.ts-channel-body strong {
+  display: block;
+  font: 800 12px 'Space Grotesk', sans-serif;
+  color: #17231B;
+}
+.ts-channel-body small {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: #718078;
+  line-height: 1.4;
+}
+
+@media (max-width: 520px) {
+  .ts-rider {
+    grid-template-columns: 52px 1fr;
+  }
+  .ts-rider-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ts-ribbon {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

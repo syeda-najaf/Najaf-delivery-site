@@ -1,0 +1,27 @@
+/* NAJAF NOVA live location components. Emerald + warm rider marker. */
+.najaf-gps-card{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:20px 22px;border:1px solid rgba(22,163,74,.18);border-radius:22px;background:linear-gradient(135deg,rgba(240,253,244,.98),#fff);box-shadow:0 12px 34px rgba(20,83,45,.07);margin:16px 0}
+.najaf-gps-copy{display:grid;gap:6px;min-width:0}
+.najaf-gps-kicker,.najaf-map-eyebrow{font-size:10px;font-weight:800;letter-spacing:.16em;color:#15803d}
+.najaf-gps-copy strong{font-size:18px;color:#17231b}
+.najaf-gps-copy p{margin:0;color:#68756d;font-size:13px;line-height:1.55}
+.najaf-gps-copy small{color:#166534;overflow-wrap:anywhere}
+.najaf-gps-card button,.najaf-map-share,.najaf-map-stop{border:0;border-radius:13px;padding:12px 16px;font-weight:800;cursor:pointer;white-space:nowrap;background:#15803d;color:#fff;box-shadow:0 8px 18px rgba(21,128,61,.18)}
+.najaf-gps-card button:disabled{opacity:.65;cursor:wait}
+.najaf-live-map{width:100%;overflow:hidden;border:1px solid rgba(22,163,74,.16);border-radius:24px;background:#fff;box-shadow:0 16px 42px rgba(20,83,45,.08)}
+.najaf-live-map-full{min-height:560px}
+.najaf-map-topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 19px;background:#fbfffc;border-bottom:1px solid #e5f1e8}
+.najaf-map-topbar>div{display:grid;gap:5px;min-width:0}
+.najaf-map-topbar strong{font-size:16px;color:#17231b}
+.najaf-map-topbar small{font-size:12px;color:#68756d}
+.najaf-map-canvas{height:430px;width:100%;background:#e9f5ec}
+.najaf-live-map-full .najaf-map-canvas{height:min(66vh,680px);min-height:430px}
+.najaf-map-share{background:#15803d}
+.najaf-map-stop{background:#17231b}
+.najaf-map-legend{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:13px 17px;color:#59685e;font-size:12px}
+.najaf-map-legend span{display:flex;align-items:center;gap:7px}
+.najaf-map-legend i{display:inline-block;width:10px;height:10px;border-radius:50%}
+.najaf-legend-customer{background:#16a34a}.najaf-legend-rider{background:#f97316}
+.najaf-map-error,.najaf-map-note,.najaf-map-step{display:block;margin:0;padding:10px 17px 15px;font-size:12px;line-height:1.5;color:#526258}
+.najaf-map-error{color:#b42318;background:#fff4f2}
+.najaf-map-step{color:#166534;font-weight:700}
+@media(max-width:620px){.najaf-gps-card,.najaf-map-topbar{align-items:stretch;flex-direction:column}.najaf-gps-card button{width:100%;white-space:normal}.najaf-map-canvas{height:360px}.najaf-live-map-full .najaf-map-canvas{min-height:360px}.najaf-map-share,.najaf-map-stop{width:100%}}
